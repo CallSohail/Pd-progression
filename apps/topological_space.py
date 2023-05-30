@@ -1,34 +1,33 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import matplotlib.patches as mpatches
-import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.express as px
 
 
 def app():
-    st.write("## Topological Space for PD Subtypes using Unsupervised Approach")
+    st.write("## :blue[Topological Space for PD Subtypes using Unsupervised Approach]")
     original_data = pd.read_csv("data/PDBP_PPMI_replication_progression_space_3d.csv")
     colorable_columns_maps = {
         'Subtypes': "Subtypes",
     }
     colorable_columns = list(colorable_columns_maps)
-    # st.write("### Select a factor to color according to the factor")
-    select_color = "Subtypes" # st.selectbox('', [colorable_columns_maps[i] for i in colorable_columns], index=0)
+    select_color = "Subtypes"  # st.selectbox('', [colorable_columns_maps[i] for i in colorable_columns], index=0)
     cols = st.columns(2)
-    if cols[0].checkbox("Include replication cohort (PDBP)"):
+    if cols[0].checkbox(":orange[_Include replication cohort (PDBP)_]"):
         pass
     else:
         original_data = original_data[(original_data['dataset'] == 'ppmi')]
     # st.write("#### Select the duration from baseline to visualize progression")
     year_list = ['Baseline', 'Year1', 'Year2', 'Year3', 'Year4', 'Year5']
-    if cols[1].checkbox("View progression at 2 year interval"):
-        end_select_year = st.select_slider('Select the duration from baseline to visualize progression', ['Year4', 'Year5'])
+    if cols[1].checkbox(":orange[_View progression at 2 year interval_]"):
+        end_select_year = st.select_slider('**Select the duration from baseline to visualize progression**',
+                                           ['Year4', 'Year5'])
         itera = 2
     else:
-        end_select_year = st.select_slider('Select the duration from baseline to visualize progression', ['Year2', 'Year3', 'Year4', 'Year5'])
+        end_select_year = st.select_slider('**Select the duration from baseline to visualize progression**',
+                                           ['Year2', 'Year3', 'Year4', 'Year5'])
         itera = 1
-
 
     year_mapping = {'Baseline': 'BL', 'Year1': 'V04', 'Year2': 'V06', 'Year3': 'V08', 'Year4': 'V10', 'Year5': 'V12'}
     # original_data = original_data[original_data['visit'] == year_mapping[select_year]]
@@ -37,16 +36,23 @@ def app():
     subtype_order = ['PDvec3', 'PDvec2', 'PDvec1', 'Non-PD']
     subtype_replace = {'PD_h': 'PDvec3', 'PD_m': 'PDvec2', 'PD_l': 'PDvec1', 'HC': 'Non-PD', 'Control': 'Non-PD'}
     subtype_column = {'GMM': 'Subtypes'}
+
+    # updated code
+    fig = px.scatter_3d(original_data, x='Cognitive dimension', y='Motor dimension', z='Sleep dimension',
+                        color='Subtypes'
+                        , color_discrete_map=palette_progression)
+
+    for enm in range(3):
+        select_year = year_list[year_list.index(end_select_year) - 2 * itera + enm * itera]
     color_patch = []
     for lab, color in palette_progression.items():
         color_patch.append(mpatches.Patch(color=color, label=lab))
-
 
     # st.write(ppmi.head())
     # st.write(pdbp.head())
     cols = st.columns(3)
 
-    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
+    @st.cache_resource(ttl=24 * 3600)
     def get_plot(select_year):
         ppmi = original_data[
             (original_data['dataset'] == 'ppmi') & (original_data['visit'] == year_mapping[select_year])]
@@ -68,11 +74,6 @@ def app():
             ax.scatter(pdbp[x_axis], pdbp[y_axis], pdbp[z_axis],
                        c=pdbp['Subtypes'].map(lambda x: palette_progression[x]),
                        marker='s', edgecolors='black', s=30)
-        # for subtype, color in palette_progression.items():
-        #    x_meanpt = pdbp.groupby('Subtypes').agg('mean').loc[subtype][x_axis]
-        #    y_meanpt = pdbp.groupby('Subtypes').agg('mean').loc[subtype][y_axis]
-        #    z_meanpt = pdbp.groupby('Subtypes').agg('mean').loc[subtype][z_axis]
-        #    mean_line = [(0, x_meanpt), (0, y_meanpt), (0, z_meanpt)]
 
         # label the axes
         ax.set_xlabel(r'{}$\rightarrow$'.format(label_name['x_axis']), labelpad=10, fontsize=18)
@@ -103,15 +104,11 @@ def app():
         return fig
 
     for enm in range(3):
-        select_year = year_list[year_list.index(end_select_year) - 2*itera + enm*itera]
-
-
-
+        select_year = year_list[year_list.index(end_select_year) - 2 * itera + enm * itera]
 
         with cols[enm]:
-            # st.header("A cat")
-            # st.image("https://static.streamlit.io/examples/cat.jpg")
-            st.pyplot(get_plot(select_year), height=300, width=500)
-
-        #  ax.can_zoom(True)
-        # plt.show()
+            st.header("Parkinson's")
+            st.image("https://img.freepik.com/free-vector/alzheimer-disease-composition-with-senior-man_1284-64661"
+                     ".jpg?size=626&ext=jpg&ga=GA1.1.123692431.1685036899&semt=ais")
+            st.pyplot(get_plot(select_year))
+        plt.show()

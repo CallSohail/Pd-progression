@@ -1,32 +1,24 @@
-import pickle
 import streamlit as st
-import pandas as pd
-import numpy as np
-import os
-import sys
-import shap
-import hashlib
-import plotly.express as px
-import plotly
-import copy
-import matplotlib.pyplot as plt
-st.set_option('deprecation.showPyplotGlobalUse', False)
 import warnings
-warnings.filterwarnings("ignore")
 import logging
+from MachineLearningStreamlitBase.multiapp import MultiApp
+from MachineLearningStreamlitBase.apps import streamlit_prediction_component_multiclass, streamlit_shapley_component
+from MachineLearningStreamlitBase.apps import parkinson
+from apps import topological_space, select
+import gc
 
+st.set_option('deprecation.showPyplotGlobalUse', False)
+
+warnings.filterwarnings("ignore")
 
 logger = logging.getLogger()
 logger.disabled = True
 
-from MachineLearningStreamlitBase.multiapp import MultiApp
-from MachineLearningStreamlitBase.apps import streamlit_prediction_component_multiclass, streamlit_shapley_component
-
 # add any app you like in apps directory
-from apps import topological_space, select
+
 
 app = MultiApp()
-max_width = 4000
+max_width = 15000
 padding_top = 10
 padding_right = 10
 padding_left = 10
@@ -34,7 +26,7 @@ padding_bottom = 10
 COLOR = 'black'
 BACKGROUND_COLOR = 'white'
 st.markdown(
-        f"""
+    f"""
 <style>
     .reportview-container .main .block-container{{
         max-width: {max_width}px;
@@ -49,50 +41,68 @@ st.markdown(
     }}
 </style>
 """,
-        unsafe_allow_html=True,
-    )
+    unsafe_allow_html=True,
+)
 
-import copy
-
-### import psutil
-### # gives a single float value
-### mem = psutil.virtual_memory()
-### cols = st.beta_columns(4)
-### with cols[0]:
-###     st.write("Available Memory:", round(mem.available/1e9,2), "GB")
-###     st.write('Fraction of RAM usage:', round(psutil.virtual_memory().percent, 2))
-###
-### with cols[1]:
-###     st.write('Available memory fraction', round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 2))
-###     st.write("Load Average: ***" +  ', '.join([str(round(i, 2)) for i in psutil.getloadavg()]) + '***')
-###
-### with cols[2]:
-###     st.write("Total CPUS:", psutil.cpu_count())
-###     st.write("CPU percent usage", round(psutil.cpu_percent(interval=None), 2))
-###
-### with cols[3]:
-###     st.write("Cores utilization: ***" + ', '.join([str(round((i * 100) / psutil.cpu_count(), 2)) for i in psutil.getloadavg()]) + '***')
-###     # st.write("All Memory USE", dict(psutil.virtual_memory()._asdict()))
-
-
-import gc
 gc.enable()
-# cols[1].write("Load Average", psutil.getloadavg())
-# gives an object with many fields
-# you can convert that object to a dictionary
-# st.write(dict(psutil.virtual_memory()._asdict()))
 
-# you can have the percentage of used RAM
-# you can calculate percentage of available memory
+# Define the sidebar layout
+
+# st.sidebar.title(
+#     ":orange[Identification & Prediction Of :blue[_Parkinson Disease_] Subtypes & Progression Using Machine Learning]"
+# )
+st.sidebar.markdown(
+    "<h1 style='color: orange; font-size: 25px; font-family: monospace;'>Identification & Prediction Of <span "
+    "style='color: Cyan;'>Parkinson Disease</span> Subtypes & Progression Using Machine Learning</h1>",
+    unsafe_allow_html=True
+)
 
 
+st.sidebar.markdown("___")
 
+# Define the app selection menu
 
-##TODO: UPDATE TITLE
-# st.write('# Machine Learning for ALS')
-app.add_app("Home", select.app)
-app.add_app("Scientific background", streamlit_shapley_component.app)
-app.add_app("Predict Patient PD Subtype", streamlit_prediction_component_multiclass.app)
-##TODO: Add any apps you like
-app.add_app("Explore the PD subtype topological space", topological_space.app)
+app_selection = st.sidebar.selectbox(
+    ":green[**Select App**]",
+    (
+        "Home 🏘️",
+        "Predict Patient PD Subtype 👨‍⚕️",
+        "Predict Parkinson's Disease 🏥",
+        "Scientific background 👨‍🔬",
+        "Explore the PD subtype topological space 👾"
+
+    ))
+
+# Add the apps based on the selected option
+
+if app_selection == "Home 🏘️":
+    app.add_app("Home", select.app)
+elif app_selection == "Scientific background 👨‍🔬":
+    app.add_app("Scientific background", streamlit_shapley_component.app)
+elif app_selection == "Predict Patient PD Subtype 👨‍⚕️":
+    app.add_app("Predict Patient PD Subtype", streamlit_prediction_component_multiclass.app)
+elif app_selection == "Explore the PD subtype topological space 👾":
+    app.add_app("Explore the PD subtype topological space", topological_space.app)
+elif app_selection == "Predict Parkinson's Disease 🏥":
+    app.add_app("Predict Parkinson's Disease", parkinson.app)
+
+# Define the main content layout
+
+st.markdown(
+
+    """
+    <style>
+        .reportview-container .main {
+            max-width: 1200px;
+            padding: 1rem;
+        }
+    </style>
+    """
+    ,
+    unsafe_allow_html=
+    True
+    ,
+)
+
+# Render the app
 app.run()
